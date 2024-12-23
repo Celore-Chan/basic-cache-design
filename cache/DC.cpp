@@ -25,36 +25,36 @@ void data_init(){
 
 uint32_t cache_data_read(uint32_t address)
 {
-    uint32_t tag = address >> 13 ;//ÓÒÒÆ13Î»ÄÃ³ö±ê¼ÇºÅ 
-    uint32_t set = (address >>5) &(0xFF);//ÓÒÒÆÎåÎ»£¬ÓëÉÏ8¸ö¡°1¡±£¬È¡³öcacheµÄ×éºÅ 
-    uint32_t inneraddress = address & 0x1f;//ÓëÉÏ5¸ö¡°1¡±£¬È¡³ö¿éÄÚµØÖ· 
+    uint32_t tag = address >> 13 ;//å³ç§»13ä½æ‹¿å‡ºæ ‡è®°å· 
+    uint32_t set = (address >>5) &(0xFF);//å³ç§»äº”ä½ï¼Œä¸ä¸Š8ä¸ªâ€œ1â€ï¼Œå–å‡ºcacheçš„ç»„å· 
+    uint32_t inneraddress = address & 0x1f;//ä¸ä¸Š5ä¸ªâ€œ1â€ï¼Œå–å‡ºå—å†…åœ°å€ 
     uint32_t i = 0;
 
     for(i=0;i<8;i++)
     {
-        if(cache_data.cache_data_set[set].cache_data_line[i].valid==1)//ÓĞĞ§Î»Îª¡°1¡±²Å¶ÁÈ¡ 
+        if(cache_data.cache_data_set[set].cache_data_line[i].valid==1)//æœ‰æ•ˆä½ä¸ºâ€œ1â€æ‰è¯»å– 
         {
-            if(cache_data.cache_data_set[set].cache_data_line[i].tag == tag)//±ê¼ÇÒ»ÖÂ 
+            if(cache_data.cache_data_set[set].cache_data_line[i].tag == tag)//æ ‡è®°ä¸€è‡´ 
             {
                 uint32_t j = inneraddress;
                 uint32_t word = (cache_data.cache_data_set[set].cache_data_line[i].data.block[j]<<0)    |
                                 (cache_data.cache_data_set[set].cache_data_line[i].data.block[j+1]<<8)  |
                                 (cache_data.cache_data_set[set].cache_data_line[i].data.block[j+2]<<16) |
                                 (cache_data.cache_data_set[set].cache_data_line[i].data.block[j+3]<<24);  
-                return word;//·µ»ØdataÊı¾İ 
+                return word;//è¿”å›dataæ•°æ® 
             }
         }
     }
     
     waiting_data = 49;
-    cache_data_load(address);//Ã»ÓĞÓĞĞ§Î» 
+    cache_data_load(address);//æ²¡æœ‰æœ‰æ•ˆä½ 
     return 0xffffffff;
 }
 
 void cache_data_load(uint32_t address)
 {
-    uint32_t tag = address >> 13 ;//È¡±ê¼ÇºÅ 
-    uint32_t set = (address >>5) &(0xFF);//È¡cache×éºÅ 
+    uint32_t tag = address >> 13 ;//å–æ ‡è®°å· 
+    uint32_t set = (address >>5) &(0xFF);//å–cacheç»„å· 
     uint32_t begin = (address >> 5);
     begin = begin << 5;
     int i = 0;
@@ -64,12 +64,12 @@ void cache_data_load(uint32_t address)
     
     for(i=0;i<8;i++)
     {
-        if(cache_data.cache_data_set[set].cache_data_line[i].valid==0)//ÓĞĞ§Î»ÎŞĞ§£¬½«±»Ìæ»» 
+        if(cache_data.cache_data_set[set].cache_data_line[i].valid==0)//æœ‰æ•ˆä½æ— æ•ˆï¼Œå°†è¢«æ›¿æ¢ 
         {
             cache_data.cache_data_set[set].cache_data_line[i].valid = 1;
             cache_data.cache_data_set[set].cache_data_line[i].tag = tag;
-            mark = i;//±ê¼Ç±»Ìæ»»ĞĞÎ» 
-            cache_data.cache_data_set[set].cache_data_line[i].rank = 0;//ÅÅÃûÖÃÁã
+            mark = i;//æ ‡è®°è¢«æ›¿æ¢è¡Œä½ 
+            cache_data.cache_data_set[set].cache_data_line[i].rank = 0;//æ’åç½®é›¶
             cache_data.cache_data_set[set].cache_data_line[mark].dirty = 0;
             break;
         }
@@ -77,51 +77,50 @@ void cache_data_load(uint32_t address)
     
     for(i=0;i<8;i++)
     {
-         if(mark==i)continue;//Ö»ÓĞÔÚÓĞĞ§Î»ÎŞĞ§ÇÒ±»Ìæ»»Ê±»áÌø¹ı£¬ÕâÒâÎ¶×Å¸ÃĞĞµÄÅÅÃû±£³Ö0 
+         if(mark==i)continue;//åªæœ‰åœ¨æœ‰æ•ˆä½æ— æ•ˆä¸”è¢«æ›¿æ¢æ—¶ä¼šè·³è¿‡ï¼Œè¿™æ„å‘³ç€è¯¥è¡Œçš„æ’åä¿æŒ0 
          else
             {
                 if(cache_data.cache_data_set[set].cache_data_line[i].rank<7)
-                cache_data.cache_data_set[set].cache_data_line[i].rank++;//ÅÅÃû++ 
+                cache_data.cache_data_set[set].cache_data_line[i].rank++;//æ’å++ 
             }
     }
     
-    if(mark==-1){//ÓĞĞ§Î»¶¼ÓĞĞ§£¬ÒâÎ¶×Å¼´½«ÓĞ ÓĞĞ§ĞĞ ±»Ìæ»»£¬´ËÊ±ÔàÎ»ÒªĞ´ÈëÄÚ´æ 
+    if(mark==-1){//æœ‰æ•ˆä½éƒ½æœ‰æ•ˆï¼Œæ„å‘³ç€å³å°†æœ‰ æœ‰æ•ˆè¡Œ è¢«æ›¿æ¢ï¼Œæ­¤æ—¶è„ä½è¦å†™å…¥å†…å­˜ 
         uint8_t maxn = 0;
         int i;
         for(i=0;i<8;i++)
         {
-            if(cache_data.cache_data_set[set].cache_data_line[i].rank==0)continue;//Ìø¹ıÅÅÃûÎª0µÄ
+            if(cache_data.cache_data_set[set].cache_data_line[i].rank==0)continue;//è·³è¿‡æ’åä¸º0çš„
             else
             {
-                if(maxn<=cache_data.cache_data_set[set].cache_data_line[i].rank)//ÕÒ³öÅÅÃû×î´óµÄ 
+                if(maxn<=cache_data.cache_data_set[set].cache_data_line[i].rank)//æ‰¾å‡ºæ’åæœ€å¤§çš„ 
                 {
                     maxn = cache_data.cache_data_set[set].cache_data_line[i].rank;
-                    mark = i;//±ê¼ÇÅÅÃû×î´óµÄĞĞÎ» 
-                    getline = cache_data.cache_data_set[set].cache_data_line[i].tag;//¼ÇÂ¼µ±Ç°±ê¼ÇºÅ 
-                    getset = set;//¼ÇÂ¼µ±Ç°cache×éºÅ 
+                    mark = i;//æ ‡è®°æ’åæœ€å¤§çš„è¡Œä½ 
+                    remain_tag = cache_data.cache_data_set[set].cache_data_line[i].tag;//è®°å½•å½“å‰æ ‡è®°å· 
                 }
             }
         }
         
-        if(cache_data.cache_data_set[set].cache_data_line[mark].dirty == 1){//ÔàÎ»Îª0¾ÍÌø¹ı£¬¼´cacheÊı¾İÃ»ÓĞ±»¸Ä¹ı 
+        if(cache_data.cache_data_set[set].cache_data_line[mark].dirty == 1){//è„ä½ä¸º0å°±è·³è¿‡ï¼Œå³cacheæ•°æ®æ²¡æœ‰è¢«æ”¹è¿‡ 
         	uint32_t readdress = 0;
-        	readdress = (getline<<13)|(set<<5); //ÖØĞÂ×éºÏÔàÎ»Îª¡°1¡±ÄÇĞĞµÄ±ê¼ÇºÅºÍcache×éºÅ
-        	for(i=0;i<8;i++)«æ¬¡
+        	readdress = (remain_tag<<13)|(set<<5); //é‡æ–°ç»„åˆè„ä½ä¸ºâ€œ1â€é‚£è¡Œçš„æ ‡è®°å·å’Œcacheç»„å·
+        	for(i=0;i<8;i++)î‚£î‚¼
         	{
-            	uint32_t word = cache_data_read(readdress);//·µ»ØÏàÓ¦¿éÄÚµÄÄÚÈİ 
-            	mem_write_32(readdress,word);//ÏòmemoryµÄ¿éÄÚĞ´ÈëÄÚÈİ£¬·Ã´æ 
+            	uint32_t word = cache_data_read(readdress);//è¿”å›ç›¸åº”å—å†…çš„å†…å®¹ 
+            	mem_write_32(readdress,word);//å‘memoryçš„å—å†…å†™å…¥å†…å®¹ï¼Œè®¿å­˜ 
             	readdress+=4;
         	}
         }
         cache_data.cache_data_set[set].cache_data_line[mark].valid = 1;
-        cache_data.cache_data_set[set].cache_data_line[mark].tag = tag;//¼ÓÔØĞÂµÄ±ê¼ÇºÅ 
+        cache_data.cache_data_set[set].cache_data_line[mark].tag = tag;//åŠ è½½æ–°çš„æ ‡è®°å· 
         cache_data.cache_data_set[set].cache_data_line[mark].rank = 0;        
         cache_data.cache_data_set[set].cache_data_line[mark].dirty = 0;
     }
     
     for(i = 0;i<8;i++)
     {
-        uint32_t word = mem_read_32(begin);//·Ã´æ£¬È¡³ödataÏàÓ¦Î»ÖÃ´¦µÄÊı¾İ£¬Ğ´Èëcache
+        uint32_t word = mem_read_32(begin);//è®¿å­˜ï¼Œå–å‡ºdataç›¸åº”ä½ç½®å¤„çš„æ•°æ®ï¼Œå†™å…¥cache
         cache_data.cache_data_set[set].cache_data_line[mark].data.block[i*4]   = (uint8_t)(word>>0)&0xff;
         cache_data.cache_data_set[set].cache_data_line[mark].data.block[i*4+1] = (uint8_t)(word>>8)&0xff;
         cache_data.cache_data_set[set].cache_data_line[mark].data.block[i*4+2] = (uint8_t)(word>>16)&0xff;
@@ -133,23 +132,23 @@ void cache_data_load(uint32_t address)
 
 void cache_data_write_val(uint32_t address,uint32_t write)
 {
-    if(cache_data_read(address)==0xffffffff){//Ã»ÓĞÓĞĞ§Î» 
+    if(cache_data_read(address)==0xffffffff){//æ²¡æœ‰æœ‰æ•ˆä½ 
         bool blank=0;
     }
     
-    uint32_t tag = address >> 13 ;//È¡±ê¼ÇºÅ 
-    uint32_t set = (address >>5) &(0xFF);//È¡cache×éºÅ 
-    uint32_t inneraddress = address & 0x1f;//È¡¿éÄÚµØÖ· 
+    uint32_t tag = address >> 13 ;//å–æ ‡è®°å· 
+    uint32_t set = (address >>5) &(0xFF);//å–cacheç»„å· 
+    uint32_t inneraddress = address & 0x1f;//å–å—å†…åœ°å€ 
     uint32_t i = 0;
      
     for(i=0;i<8;i++)
     {
-        if(cache_data.cache_data_set[set].cache_data_line[i].valid==1)//ÓĞĞ§Î»ÓĞĞ§²ÅÄÜÍùcacheÄÚĞ´ÄÚÈİ 
+        if(cache_data.cache_data_set[set].cache_data_line[i].valid==1)//æœ‰æ•ˆä½æœ‰æ•ˆæ‰èƒ½å¾€cacheå†…å†™å†…å®¹ 
         {
             if(cache_data.cache_data_set[set].cache_data_line[i].tag == tag)
             {
                 uint32_t j = inneraddress;
-                cache_data.cache_data_set[set].cache_data_line[i].dirty = 1;//ÔàÎ»ÖÃ¡°1¡± 
+                cache_data.cache_data_set[set].cache_data_line[i].dirty = 1;//è„ä½ç½®â€œ1â€ 
                 cache_data.cache_data_set[set].cache_data_line[i].data.block[j]   = (uint8_t)(write>>0)&0xff;
                 cache_data.cache_data_set[set].cache_data_line[i].data.block[j+1] = (uint8_t)(write>>8)&0xff;
                 cache_data.cache_data_set[set].cache_data_line[i].data.block[j+2] = (uint8_t)(write>>16)&0xff;
