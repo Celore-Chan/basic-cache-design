@@ -11,10 +11,9 @@ Cache_data cache_data;
 int waiting_data = 0;
 
 void data_init(){
-    int i =0, j = 0;
-    for(i=0;i<256;i++)
+    for(int i=0;i<256;i++)
     {
-        for(j=0;j<8;j++)
+        for(int j=0;j<8;j++)
         {
             cache_data.cache_data_set[i].cache_data_line[j].valid = 0;
             cache_data.cache_data_set[i].cache_data_line[j].rank = 0;
@@ -28,9 +27,8 @@ uint32_t cache_data_read(uint32_t address)
     uint32_t tag = address >> 13 ;//右移13位拿出标记号 
     uint32_t set = (address >>5) &(0xFF);//右移五位，与上8个“1”，取出cache的组号 
     uint32_t inneraddress = address & 0x1f;//与上5个“1”，取出块内地址 
-    uint32_t i = 0;
 
-    for(i=0;i<8;i++)
+    for(int i=0;i<8;i++)
     {
         if(cache_data.cache_data_set[set].cache_data_line[i].valid==1)//有效位为“1”才读取 
         {
@@ -57,25 +55,23 @@ void cache_data_load(uint32_t address)
     uint32_t set = (address >>5) &(0xFF);//取cache组号 
     uint32_t begin = (address >> 5);
     begin = begin << 5;
-    int i = 0;
     int mark = -1;
-    uint32_t getline = 0;
-    uint32_t getset = 0;
+    uint32_t remain_tag = 0;
     
-    for(i=0;i<8;i++)
+    for(int i=0;i<8;i++)
     {
         if(cache_data.cache_data_set[set].cache_data_line[i].valid==0)//有效位无效，将被替换 
         {
+            mark = i;//标记被替换行位 
             cache_data.cache_data_set[set].cache_data_line[i].valid = 1;
             cache_data.cache_data_set[set].cache_data_line[i].tag = tag;
-            mark = i;//标记被替换行位 
             cache_data.cache_data_set[set].cache_data_line[i].rank = 0;//排名置零
             cache_data.cache_data_set[set].cache_data_line[mark].dirty = 0;
             break;
         }
     }
     
-    for(i=0;i<8;i++)
+    for(int i=0;i<8;i++)
     {
          if(mark==i)continue;//只有在有效位无效且被替换时会跳过，这意味着该行的排名保持0 
          else
@@ -88,15 +84,15 @@ void cache_data_load(uint32_t address)
     if(mark==-1){//有效位都有效，意味着即将有 有效行 被替换，此时脏位要写入内存 
         uint8_t maxn = 0;
         int i;
-        for(i=0;i<8;i++)
+        for(int i=0;i<8;i++)
         {
             if(cache_data.cache_data_set[set].cache_data_line[i].rank==0)continue;//跳过排名为0的
             else
             {
                 if(maxn<=cache_data.cache_data_set[set].cache_data_line[i].rank)//找出排名最大的 
                 {
-                    maxn = cache_data.cache_data_set[set].cache_data_line[i].rank;
                     mark = i;//标记排名最大的行位 
+                    maxn = cache_data.cache_data_set[set].cache_data_line[i].rank;
                     remain_tag = cache_data.cache_data_set[set].cache_data_line[i].tag;//记录当前标记号 
                 }
             }
@@ -118,7 +114,7 @@ void cache_data_load(uint32_t address)
         cache_data.cache_data_set[set].cache_data_line[mark].dirty = 0;
     }
     
-    for(i = 0;i<8;i++)
+    for(int i = 0;i<8;i++)
     {
         uint32_t word = mem_read_32(begin);//访存，取出data相应位置处的数据，写入cache
         cache_data.cache_data_set[set].cache_data_line[mark].data.block[i*4]   = (uint8_t)(word>>0)&0xff;
@@ -139,9 +135,8 @@ void cache_data_write_val(uint32_t address,uint32_t write)
     uint32_t tag = address >> 13 ;//取标记号 
     uint32_t set = (address >>5) &(0xFF);//取cache组号 
     uint32_t inneraddress = address & 0x1f;//取块内地址 
-    uint32_t i = 0;
      
-    for(i=0;i<8;i++)
+    for(int i=0;i<8;i++)
     {
         if(cache_data.cache_data_set[set].cache_data_line[i].valid==1)//有效位有效才能往cache内写内容 
         {
