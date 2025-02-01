@@ -25,8 +25,8 @@ void init(){
 void get_set(uint32_t address)
 {
     uint32_t tmp = address & 0xFFFFF;
-    uint32_t tag = tmp >> 11 ;//ÓÒÒÆ11Î»È¡³ö±ê¼ÇºÅ 
-    uint32_t set = (tmp >>5) &(0x3F);//È¡³öcache×éºÅ 
+    uint32_t tag = tmp >> 11 ;//å³ç§»11ä½å–å‡ºæ ‡è®°å· 
+    uint32_t set = (tmp >>5) &(0x3F);//å–å‡ºcacheç»„å· 
     uint32_t begin = (address >> 5)<<5;
     printf("%d %d %d\n",tmp,tag,set);
 }
@@ -34,37 +34,37 @@ void get_set(uint32_t address)
 uint32_t Cache_Instruction_read(uint32_t address)
 {
     uint32_t tmp = address & 0xFFFFF;
-    uint32_t tag = tmp >> 11 ;//ÓÒÒÆ11Î»È¡³ö±ê¼ÇºÅ
-    uint32_t set = (tmp >>5) &(0x3F);//ÓÒÒÆ5Î»£¬ÓëÉÏ6¸ö¡°1¡±£¬È¡³öcache×éºÅ
-    uint32_t inneraddress = address & 0x1f;//ÓëÉÏ5¸ö¡°1¡±£¬È¡³ö¿éÄÚµØÖ· 
+    uint32_t tag = tmp >> 11 ;//å³ç§»11ä½å–å‡ºæ ‡è®°å·
+    uint32_t set = (tmp >>5) &(0x3F);//å³ç§»5ä½ï¼Œä¸ä¸Š6ä¸ªâ€œ1â€ï¼Œå–å‡ºcacheç»„å·
+    uint32_t inneraddress = address & 0x1f;//ä¸ä¸Š5ä¸ªâ€œ1â€ï¼Œå–å‡ºå—å†…åœ°å€ 
     uint32_t i = 0;
 
     for(i=0;i<4;i++)
     {
-        if(cache.cache_set[set].cache_line[i].valid==1)//±ê¼ÇÎ»ÓĞĞ§ 
+        if(cache.cache_set[set].cache_line[i].valid==1)//æ ‡è®°ä½æœ‰æ•ˆ 
         {
-            if(cache.cache_set[set].cache_line[i].tag == tag)//ÇÒ±ê¼ÇÓëcache±ê¼ÇÒ»ÖÂ 
+            if(cache.cache_set[set].cache_line[i].tag == tag)//ä¸”æ ‡è®°ä¸cacheæ ‡è®°ä¸€è‡´ 
             {
                 uint32_t j = inneraddress;
                 uint32_t word = (cache.cache_set[set].cache_line[i].data.block[j]<<0)  |
                                 (cache.cache_set[set].cache_line[i].data.block[j+1]<<8)|
                                 (cache.cache_set[set].cache_line[i].data.block[j+2]<<16) |
                                 (cache.cache_set[set].cache_line[i].data.block[j+3]<<24);  
-                return word;//·µ»ØÖ¸ÁîÊı¾İ 
+                return word;//è¿”å›æŒ‡ä»¤æ•°æ® 
             }
         }
     }
     
-    waiting = 49;
-    Cache_Instruction_write(address);//Ìø³öÑ­»·¼´cacheÄÚÎŞ¸ÃµØÖ·£¬´ËÊ±ÒªÌæ»»¸Ã×éµÄÅÅÃû×î´óĞĞ 
+    waiting = 1;
+    Cache_Instruction_write(address);//è·³å‡ºå¾ªç¯å³cacheå†…æ— è¯¥åœ°å€ï¼Œæ­¤æ—¶è¦æ›¿æ¢è¯¥ç»„çš„æ’åæœ€å¤§è¡Œ 
     return 0xffffffff;
 }
 
 void Cache_Instruction_write(uint32_t address)
 {
     uint32_t tmp = address & 0xFFFFF;
-    uint32_t tag = tmp >> 11 ;//×óÒÆÊ®Ò»Î»È¡±ê¼ÇºÅ 
-    uint32_t set = (tmp >>5) &(0x3F);//ÓÒÒÆÎåÎ»ÓëÉÏ6¸ö¡°1¡±È¡µÃ×éºÅ 
+    uint32_t tag = tmp >> 11 ;//å·¦ç§»åä¸€ä½å–æ ‡è®°å· 
+    uint32_t set = (tmp >>5) &(0x3F);//å³ç§»äº”ä½ä¸ä¸Š6ä¸ªâ€œ1â€å–å¾—ç»„å· 
     uint32_t begin = (address >> 5);
     begin = begin << 5;
     uint32_t i = 0;
@@ -72,51 +72,51 @@ void Cache_Instruction_write(uint32_t address)
     
     for(i=0;i<4;i++)
     {
-        if(cache.cache_set[set].cache_line[i].valid==0)//±ê¼ÇÎ»ÎŞĞ§£¬Í¨³£ÊÇ³õÊ¼»¯Ê±ÓÃµ½ 
+        if(cache.cache_set[set].cache_line[i].valid==0)//æ ‡è®°ä½æ— æ•ˆï¼Œé€šå¸¸æ˜¯åˆå§‹åŒ–æ—¶ç”¨åˆ° 
         {
             cache.cache_set[set].cache_line[i].valid = 1;
             cache.cache_set[set].cache_line[i].tag = tag;
-            mark = i;//¼ÇÂ¼ÏÂÎŞĞ§ĞĞÔÚ×éÄÚµÄĞĞÊı£¬ÔÚÏÂÒ»¸öforÑ­»·ÄÚÒªÓÃµ½ 
-            cache.cache_set[set].cache_line[i].rank = 0;//±»É¾ÅÅÃûÎª0£¬¼´×îĞÂ¼ÓÔØ 
+            mark = i;//è®°å½•ä¸‹æ— æ•ˆè¡Œåœ¨ç»„å†…çš„è¡Œæ•°ï¼Œåœ¨ä¸‹ä¸€ä¸ªforå¾ªç¯å†…è¦ç”¨åˆ° 
+            cache.cache_set[set].cache_line[i].rank = 0;//è¢«åˆ æ’åä¸º0ï¼Œå³æœ€æ–°åŠ è½½ 
             break;
         }
     }
     
     for(i=0;i<4;i++)
     {
-         if(mark==i)continue;//ÔÚÌæ»»ÎŞĞ§±ê¼ÇÎ»µÄÇé¿öÏÂ£¬ĞÂ¼ÓÔØµÄ²»ÓÃÔö¼ÓÅÅÃû 
+         if(mark==i)continue;//åœ¨æ›¿æ¢æ— æ•ˆæ ‡è®°ä½çš„æƒ…å†µä¸‹ï¼Œæ–°åŠ è½½çš„ä¸ç”¨å¢åŠ æ’å 
          else
             {
                 if(cache.cache_set[set].cache_line[i].rank<3)
-                cache.cache_set[set].cache_line[i].rank++;//±ğµÄ¶¼ÒªÔö¼ÓÒ»´ÎÅÅÃû 
+                cache.cache_set[set].cache_line[i].rank++;//åˆ«çš„éƒ½è¦å¢åŠ ä¸€æ¬¡æ’å 
             }
     }
     
-    if(mark==-1){//±ê¼ÇÎ»¶¼ÓĞĞ§ 
+    if(mark==-1){//æ ‡è®°ä½éƒ½æœ‰æ•ˆ 
         uint8_t maxn = 0;
         int i;
         
         for(i=0;i<4;i++)
         {
-            if(cache.cache_set[set].cache_line[i].rank==0)continue;//×î½ü¼ÓÔØ¹ı£¬Ìø¹ı¸ÃĞĞ
+            if(cache.cache_set[set].cache_line[i].rank==0)continue;//æœ€è¿‘åŠ è½½è¿‡ï¼Œè·³è¿‡è¯¥è¡Œ
             else
             {
                 if(maxn<=cache.cache_set[set].cache_line[i].rank)
                 {
                     maxn = cache.cache_set[set].cache_line[i].rank;
-                    mark = i;//±ê¼ÇÅÅÃû×î´óµÄ¡¢Òª±»Ìæ»»µÄÄÇÒ»ĞĞ 
+                    mark = i;//æ ‡è®°æ’åæœ€å¤§çš„ã€è¦è¢«æ›¿æ¢çš„é‚£ä¸€è¡Œ 
                 }
             }
         }
         
         cache.cache_set[set].cache_line[mark].valid = 1;
-        cache.cache_set[set].cache_line[mark].tag = tag;//Ìæ»»ÅÅÃû×î´óÄÇÒ»ĞĞ 
+        cache.cache_set[set].cache_line[mark].tag = tag;//æ›¿æ¢æ’åæœ€å¤§é‚£ä¸€è¡Œ 
         cache.cache_set[set].cache_line[mark].rank = 0;        
     }
     
     for(i = 0;i<8;i++)
     {
-        uint32_t word = mem_read_32(begin);//·Ã´æ£¬¶ÁÈ¡ÏàÓ¦Î»ÖÃµÄÖ¸ÁîÊı¾İ£¬²¢½«Ğ´Èëcache 
+        uint32_t word = mem_read_32(begin);//è®¿å­˜ï¼Œè¯»å–ç›¸åº”ä½ç½®çš„æŒ‡ä»¤æ•°æ®ï¼Œå¹¶å°†å†™å…¥cache 
         cache.cache_set[set].cache_line[mark].data.block[i*4]   = (uint8_t)(word>>0)&0xff;
         cache.cache_set[set].cache_line[mark].data.block[i*4+1] = (uint8_t)(word>>8)&0xff;
         cache.cache_set[set].cache_line[mark].data.block[i*4+2] = (uint8_t)(word>>16)&0xff;
