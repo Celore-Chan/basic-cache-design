@@ -44,7 +44,7 @@ uint32_t cache_data_read(uint32_t address)
         }
     }
     
-    waiting_data = 49;
+    waiting_data = 1;
     cache_data_load(address);//没有有效位 
     return 0xffffffff;
 }
